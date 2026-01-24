@@ -1,0 +1,27 @@
+/* Custom scrollbar for sidebar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  /* height: 6px; */
+  /* scrollbar width */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  /* track background */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #A26CF7;
+  /* purple */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #8f5de8;
+}
+
+/* Firefox support */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #A26CF7 transparent;
+}
