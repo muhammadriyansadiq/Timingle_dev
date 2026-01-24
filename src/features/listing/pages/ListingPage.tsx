@@ -157,8 +157,10 @@ export const ListingPage: React.FC = () => {
         <>
             {/* Header with Search and Filters */}
             <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
-                <div className="flex flex-wrap gap-4 items-center">
-                    <SearchBar className="w-64 border-none" placeholder="Search listing..." />
+                <div className="flex flex-wrap gap-2 items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">Featured Listing </h1>
+
+                    <SearchBar className="w-64 border-none ml-2" placeholder="Search listing..." />
                     <Select placeholder="All Types" className="w-32 h-12" size="large" />
                     <Select placeholder="All Status" className="w-32 h-12" size="large" />
                     <DatePicker placeholder="All Dates" className="w-32 h-12" size="large" format="DD/MM/YYYY" />

@@ -164,9 +164,9 @@ export const UsersPage: React.FC = () => {
 
     return (
         <>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex  items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-                <SearchBar className="w-96 border-none" onSearch={(val: string) => console.log(val)} />
+                <SearchBar className="w-96 border-none ml-5" onSearch={(val: string) => console.log(val)} />
             </div>
 
             <GenericTable
