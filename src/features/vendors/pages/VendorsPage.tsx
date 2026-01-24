@@ -194,7 +194,7 @@ export const VendorsPage: React.FC = () => {
 
     return (
         <>
-            <div className="flex items-center mb-6 justify-between">
+            {/* <div className="flex items-center mb-6 justify-between flex-col md:flex-row  gap-2">
                 <div className="flex items-center">
                     <h1 className="text-2xl font-bold text-gray-800">Vendors</h1>
                     <SearchBar className="ml-5 w-96 border-none" onSearch={(val: string) => console.log(val)} />
@@ -206,8 +206,22 @@ export const VendorsPage: React.FC = () => {
                 >
                     Create Vendor
                 </Button>
-            </div>
+            </div> */}
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
+                <div className="flex flex-wrap gap-2 items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">Vendors </h1>
 
+                    <SearchBar className="w-64 border-none md:ml-2" placeholder="Search Vendors..." />
+                </div>
+
+                <Button
+                    icon={<PlusOutlined />}
+                    className="!bg-yellow-500 !text-text !border-none hover:!bg-primary !h-11 px-6 font-semibold"
+                    onClick={handleCreateClick}
+                >
+                    Add Featured
+                </Button>
+            </div>
             <GenericTable
                 columns={columns}
                 data={vendors}

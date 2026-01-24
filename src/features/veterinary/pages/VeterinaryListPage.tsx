@@ -129,6 +129,7 @@ export const VeterinaryListPage: React.FC = () => {
             title: 'DATE',
             dataIndex: 'date',
             key: 'date',
+            className: 'hidden md:block'
         },
         {
             title: 'TYPE',
@@ -185,15 +186,15 @@ export const VeterinaryListPage: React.FC = () => {
 
     return (
         <>
-            <div className="flex items-center mb-6 justify-between">
-                <div className="flex items-center gap-4">
+            <div className="flex md:items-center mb-6 justify-between flex-col md:flex-row">
+                <div className="flex items-center gap-4 flex-wrap">
                     <h1 className="text-2xl font-bold text-gray-800">Veterinary List</h1>
-                    <SearchBar className="w-80 border-none" onSearch={(val: string) => console.log(val)} />
+                    <SearchBar className="md:w-80 border-none my-4 md:my-0" onSearch={(val: string) => console.log(val)} />
                 </div>
                 {/* Optional: Add Create button if needed for this view, though design doesn't explicitly show it, usually implied for CRUD */}
                 <button
                     onClick={handleCreateClick}
-                    className="flex items-center gap-2 bg-[#A26CF7] text-white px-4 py-2 rounded-lg hover:bg-[#8f5de8] transition-colors font-medium shadow-sm"
+                    className="flex items-center gap-2 bg-[#A26CF7] text-white px-4 py-2 rounded-lg hover:bg-[#8f5de8] transition-colors font-medium shadow-sm w-fit"
                 >
                     <PlusOutlined /> Create New
                 </button>

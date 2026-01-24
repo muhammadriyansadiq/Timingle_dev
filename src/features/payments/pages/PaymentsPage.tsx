@@ -94,9 +94,9 @@ export const PaymentsPage: React.FC = () => {
 
                 <div className="mt-12">
                     <div className="flex items-center mb-7">
-                        <div className='flex justify-between items-center'>
+                        <div className='flex justify-between md:items-center flex-col md:flex-row'>
                             <h2 className="text-2xl font-bold text-gray-800">Financial Transactions</h2>
-                            <SearchBar className="w-72 border border-gray-200 mx-5" onSearch={(val: string) => console.log(val)} />
+                            <SearchBar className="w-72 border border-gray-200 md:mx-5 my-3 md:my-0" onSearch={(val: string) => console.log(val)} />
                             <div className="flex gap-2">
                                 {/* Placeholder for status filter if needed, matching design input style optionally */}
                                 <select className="border border-gray-200 rounded-lg px-3 py-3 cursor-pointer text-sm bg-white focus:outline-none">
