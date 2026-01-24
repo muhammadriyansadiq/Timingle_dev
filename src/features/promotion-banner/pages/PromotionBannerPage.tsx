@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Input, Select, DatePicker } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { Button, Select, DatePicker } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';

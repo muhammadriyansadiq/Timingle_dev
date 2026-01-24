@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dropdown, Select, Button, DatePicker } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined, StarFilled, StarOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 // import { DashboardLayout } from '../../dashboard/components/DashboardLayout';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';

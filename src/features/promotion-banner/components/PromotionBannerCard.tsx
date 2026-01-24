@@ -1,5 +1,5 @@
 import React from 'react';
-import { EditOutlined, DeleteOutlined, SwapOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { Switch } from 'antd';
 import type { PromotionBanner } from '../types';
 import { Link } from 'react-router-dom';

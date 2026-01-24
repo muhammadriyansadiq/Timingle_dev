@@ -1,5 +1,5 @@
-import { SearchOutlined, BellOutlined, DownOutlined, MenuOutlined } from '@ant-design/icons';
-import { Input, Avatar, Badge, Button } from 'antd';
+import { BellOutlined, DownOutlined, MenuOutlined } from '@ant-design/icons';
+import { Avatar, Badge, Button } from 'antd';
 
 interface TopbarProps {
     onMenuClick?: () => void;
