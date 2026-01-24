@@ -151,9 +151,9 @@ export const PairsPage: React.FC = () => {
             render: (_: string, record: Pair) => (
                 <div className="flex items-center gap-3">
                     {record.image ? (
-                        <Avatar src={record.image} />
+                        <Avatar src={record.image} className='!hidden md:block!' />
                     ) : (
-                        <Avatar icon={<UserOutlined />} />
+                        <Avatar icon={<UserOutlined />} className='!hidden md:block!' />
                     )}
                     <span className="font-medium text-gray-800">{record.pairsName}</span>
                 </div>
@@ -179,7 +179,7 @@ export const PairsPage: React.FC = () => {
             dataIndex: 'status',
             key: 'status',
             render: (status: string) => {
-                let className = "px-4 py-1.5 rounded-lg text-xs font-medium ";
+                let className = "px-2 py-1 rounded-lg text-xs font-medium whitespace-nowrap inline-block text-center min-w-fit ";
                 if (status === 'Paid') className += "bg-teal-100 text-teal-600";
                 if (status === 'Not Pay') className += "bg-red-100 text-red-500";
 
@@ -223,8 +223,31 @@ export const PairsPage: React.FC = () => {
 
     return (
         <>
-            <div className="flex items-center mb-6 justify-between">
-                <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
+                <div className="flex flex-wrap gap-2 items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">Pairs Manager</h1>
+                    <SearchBar className="w-64 md:w-80 border-none" onSearch={(val: string) => console.log(val)} />
+                    <select
+                        value={filterType}
+                        onChange={handleFilterChange}
+                        className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white focus:outline-none cursor-pointer hover:border-purple-400 transition-colors"
+                    >
+                        <option value="All">All Types</option>
+                        <option value="Breeder">Breeder</option>
+                        <option value="Vendor">Vendor</option>
+                    </select> </div>
+
+                <Button
+                    icon={<PlusOutlined />}
+                    className=" bg-buttonbgcolor! text-white! border-none! hover:bg-[#8f5de8]! h-11! px-6 font-semibold rounded-lg shadow-sm"
+                    onClick={handleCreateClick}
+                >
+                    Add Record
+                </Button>
+            </div>
+
+            {/* <div className="flex items-center flex-col md:flex-row gap-4 mb-6 justify-between">
+                <div className="flex items-center gap-4 flex-wrap">
                     <h1 className="text-2xl font-bold text-gray-800">Pairs Manager</h1>
                     <SearchBar className="w-80 border-none" onSearch={(val: string) => console.log(val)} />
                     <select
@@ -244,7 +267,7 @@ export const PairsPage: React.FC = () => {
                 >
                     Add Record
                 </Button>
-            </div>
+            </div> */}
 
             <GenericTable
                 columns={columns}

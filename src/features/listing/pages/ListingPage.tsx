@@ -160,7 +160,7 @@ export const ListingPage: React.FC = () => {
                 <div className="flex flex-wrap gap-2 items-center">
                     <h1 className="text-2xl font-bold text-gray-800">Featured Listing </h1>
 
-                    <SearchBar className="w-64 border-none ml-2" placeholder="Search listing..." />
+                    <SearchBar className="w-64 border-none md:ml-2" placeholder="Search listing..." />
                     <Select placeholder="All Types" className="w-32 h-12" size="large" />
                     <Select placeholder="All Status" className="w-32 h-12" size="large" />
                     <DatePicker placeholder="All Dates" className="w-32 h-12" size="large" format="DD/MM/YYYY" />

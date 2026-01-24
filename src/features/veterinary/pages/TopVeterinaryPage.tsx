@@ -89,11 +89,11 @@ export const TopVeterinaryPage: React.FC = () => {
 
     return (
         <>
-            <div className="flex items-center mb-8 justify-between">
+            <div className="flex md:items-center mb-8 justify-between flex-col md:flex-row">
                 <h1 className="text-2xl font-bold text-gray-800">Top Veterinary</h1>
                 <button
                     onClick={handleCreateClick}
-                    className="flex items-center gap-2 bg-[#A26CF7] text-white px-4 py-2 rounded-lg hover:bg-[#8f5de8] transition-colors font-medium shadow-sm"
+                    className="flex items-center gap-2 bg-[#A26CF7] text-white px-4 py-2 rounded-lg hover:bg-[#8f5de8] transition-colors font-medium shadow-sm w-fit mt-4 md:mt-0"
                 >
                     <PlusOutlined /> Add Top Vet
                 </button>

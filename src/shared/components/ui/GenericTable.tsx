@@ -14,7 +14,7 @@ export const GenericTable = <T extends object>({
     ...props
 }: GenericTableProps<T>) => {
     return (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm ">
             <Table
                 dataSource={data}
                 columns={columns}
@@ -22,6 +22,7 @@ export const GenericTable = <T extends object>({
                 pagination={{ pageSize: 10 }}
                 rowClassName="hover:bg-gray-50 transition-colors"
                 {...props}
+                className='!overflow-x-auto'
             />
         </div>
     );

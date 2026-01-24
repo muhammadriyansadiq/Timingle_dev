@@ -191,10 +191,10 @@ export const FeedsPage: React.FC = () => {
 
     return (
         <>
-            <div className="flex items-center mb-6 justify-between">
-                <div className="flex items-center">
+            <div className="flex items-center mb-6 justify-between flex-wrap">
+                <div className="flex md:items-center flex-col md:flex-row">
                     <h1 className="text-2xl font-bold text-gray-800">Feeds</h1>
-                    <SearchBar className="ml-5 w-96 border-none" onSearch={(val: string) => console.log(val)} />
+                    <SearchBar className="md:ml-5 md:w-96 border-none my-3 md:my-0" onSearch={(val: string) => console.log(val)} />
                 </div>
                 <Button
                     icon={<PlusOutlined />}
