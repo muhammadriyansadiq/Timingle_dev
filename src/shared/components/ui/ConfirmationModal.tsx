@@ -36,13 +36,13 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 <div className="flex gap-4 w-full justify-center">
                     <button
                         onClick={onClose}
-                        className="flex-1 py-2 px-4 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                        className="flex-1 cursor-pointer py-2 px-4 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                     >
                         {cancelText}
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="flex-1 py-2 px-4 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors shadow-md"
+                        className="flex-1 cursor-pointer py-2 px-4 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors shadow-md"
                     >
                         {confirmText}
                     </button>
