@@ -26,8 +26,21 @@ const userSchema = z.object({
 type UserSchema = z.infer<typeof userSchema>;
 
 export const UsersPage: React.FC = () => {
-    // 1. Fetch All Users
-    const { data: usersResponse, isLoading } = useUsers();
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search query
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // 1. Fetch All Users with search
+    const { data: usersResponse, isLoading } = useUsers(debouncedSearch);
     // Safely access the data array
     const users = usersResponse?.data || [];
 
@@ -192,7 +205,11 @@ export const UsersPage: React.FC = () => {
         <>
             <div className="flex  items-center mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
-                <SearchBar className="w-96 border-none ml-5" onSearch={(val: string) => console.log(val)} />
+                <SearchBar
+                    className="w-96 border-none ml-5"
+                    onSearch={(val: string) => setSearchQuery(val)}
+                    placeholder="Search users..."
+                />
             </div>
 
             <GenericTable
