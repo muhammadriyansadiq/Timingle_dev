@@ -27,6 +27,15 @@ export interface SingleUserResponse {
     data: User;
 }
 
+export interface CreateUserPayload {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string;
+    password: string;
+    role: string;
+}
+
 export interface UpdateUserPayload {
     firstName?: string;
     lastName?: string;
@@ -47,6 +56,22 @@ export const useUsers = (search?: string) => {
     return useQuery({
         queryKey: ['users', search],
         queryFn: () => getUsers(search),
+    });
+};
+
+// Create User
+export const createUser = async (data: CreateUserPayload): Promise<SingleUserResponse> => {
+    const response = await apiClient.post<SingleUserResponse>('/user', data);
+    return response.data;
+};
+
+export const useCreateUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+        },
     });
 };
 

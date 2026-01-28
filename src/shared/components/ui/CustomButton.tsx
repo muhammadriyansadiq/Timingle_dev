@@ -27,7 +27,7 @@ export const CustomButton: React.FC<CustomButtonProps> = ({
         switch (variant) {
             case 'primary':
                 // Exact styling from user request
-                return 'bg-[#A26CF7] text-whitecolor hover:bg-[#8e5bd9]';
+                return 'bg-[#A26CF7] text-whitecolor hover:bg-buttonbgcolor';
             case 'secondary':
                 return 'bg-gray-200 text-gray-800 hover:bg-gray-300';
             case 'outline':
