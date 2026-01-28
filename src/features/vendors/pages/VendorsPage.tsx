@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Avatar, message, Spin } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 // import { DashboardLayout } from '../../dashboard/components/DashboardLayout';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
@@ -11,17 +11,30 @@ import { SearchBar } from '../../../shared/components/ui/SearchBar';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useVendors, useVendor, useUpdateVendor, useDeleteVendor, type Vendor } from '../api/vendors';
+import { useVendors, useVendor, useUpdateVendor, useDeleteVendor, useCreateVendor, type Vendor } from '../api/vendors';
 import dayjs from 'dayjs';
+import { CustomButton } from '../../../shared/components/ui/CustomButton';
+import { UserRoles } from '../../users/types';
 
 const vendorSchema = z.object({
     firstName: z.string().min(1, 'First Name is required'),
     lastName: z.string().min(1, 'Last Name is required'),
     email: z.string().email('Invalid email'),
-    status: z.enum(['Active', 'Offline', 'Suspended']),
+    role: z.string().min(1, 'Role is required'),
+    status: z.string().min(1, 'Status is required'),
+});
+
+const createVendorSchema = z.object({
+    firstName: z.string().min(1, 'First Name is required'),
+    lastName: z.string().min(1, 'Last Name is required'),
+    phoneNumber: z.string().min(1, 'Phone Number is required'),
+    email: z.string().email('Invalid email'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    role: z.string().min(1, 'Role is required'),
 });
 
 type VendorSchema = z.infer<typeof vendorSchema>;
+type CreateVendorSchema = z.infer<typeof createVendorSchema>;
 
 export const VendorsPage: React.FC = () => {
     // Search State
@@ -44,6 +57,7 @@ export const VendorsPage: React.FC = () => {
     // Local State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
 
     // Fetch Single Vendor
@@ -53,9 +67,14 @@ export const VendorsPage: React.FC = () => {
     // Mutations
     const { mutate: updateVendor, isPending: isUpdating } = useUpdateVendor();
     const { mutate: deleteVendor } = useDeleteVendor();
+    const { mutate: createVendor, isPending: isCreating } = useCreateVendor();
 
     const { control, handleSubmit, reset, formState: { isDirty } } = useForm<VendorSchema>({
         resolver: zodResolver(vendorSchema),
+    });
+
+    const { control: createControl, handleSubmit: handleCreateSubmit, reset: resetCreate } = useForm<CreateVendorSchema>({
+        resolver: zodResolver(createVendorSchema),
     });
 
     // When singleVendor data is fetched, populate the form
@@ -65,7 +84,8 @@ export const VendorsPage: React.FC = () => {
                 firstName: singleVendor.firstName,
                 lastName: singleVendor.lastName,
                 email: singleVendor.email,
-                status: singleVendor.status as 'Active' | 'Offline' | 'Suspended',
+                role: singleVendor.role,
+                status: singleVendor.status,
             });
         }
     }, [singleVendor, isEditModalOpen, reset]);
@@ -78,7 +98,7 @@ export const VendorsPage: React.FC = () => {
     const handleCloseEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedVendorId(null);
-        reset({ firstName: '', lastName: '', email: '', status: 'Active' });
+        reset({ firstName: '', lastName: '', email: '', role: '', status: '' });
     };
 
     const handleDeleteClick = (id: number) => {
@@ -115,6 +135,27 @@ export const VendorsPage: React.FC = () => {
         }
     };
 
+    const handleCreateClick = () => {
+        setIsCreateModalOpen(true);
+    };
+
+    const handleCloseCreateModal = () => {
+        setIsCreateModalOpen(false);
+        resetCreate();
+    };
+
+    const onSubmitCreate = (data: CreateVendorSchema) => {
+        createVendor(data, {
+            onSuccess: () => {
+                message.success('Vendor created successfully');
+                handleCloseCreateModal();
+            },
+            onError: () => {
+                message.error('Failed to create vendor');
+            }
+        });
+    };
+
     const columns = [
         {
             title: 'ID',
@@ -138,7 +179,7 @@ export const VendorsPage: React.FC = () => {
             key: 'email',
         },
         {
-            title: 'DATE',
+            title: 'Creation DATE',
             dataIndex: 'createdAt',
             key: 'createdAt',
             render: (date: string) => dayjs(date).format('DD MMM YYYY'),
@@ -157,6 +198,7 @@ export const VendorsPage: React.FC = () => {
                 if (status === 'Active') className += "bg-green-100 text-green-600";
                 if (status === 'Offline') className += "bg-purple-100 text-purple-600";
                 if (status === 'Suspended') className += "bg-red-100 text-red-600";
+                if (!['Active', 'Offline', 'Suspended'].includes(status)) className += "bg-gray-100 text-gray-600";
 
                 return <span className={className}>{status}</span>;
             },
@@ -213,16 +255,24 @@ export const VendorsPage: React.FC = () => {
                     Create Vendor
                 </Button>
             </div> */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center mb-6">
-                <div className="flex flex-wrap gap-2 items-center">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
                     <h1 className="text-2xl font-bold text-gray-800">Vendors </h1>
 
                     <SearchBar
-                        className="w-64 border-none md:ml-2"
+                        className="w-96 border-none ml-5"
                         placeholder="Search Vendors..."
                         onSearch={(val: string) => setSearchQuery(val)}
                     />
                 </div>
+                <CustomButton
+                    onClick={handleCreateClick}
+                    // variant="primary"
+                    className="h-11! px-6! rounded-lg "
+                >
+                    <PlusOutlined />
+                    Create Vendor
+                </CustomButton>
             </div>
             <GenericTable
                 columns={columns}
@@ -243,9 +293,22 @@ export const VendorsPage: React.FC = () => {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-4">
-                        <CustomInput label="First Name" name="firstName" control={control} placeholder="First Name" />
+                        <CustomInput label="Name" name="firstName" control={control} placeholder="First Name" />
                         <CustomInput label="Last Name" name="lastName" control={control} placeholder="Last Name" />
                         <CustomInput label="Email" name="email" control={control} placeholder="Email" />
+                        <CustomSelect
+                            label="Type"
+                            name="role"
+                            control={control}
+                            placeholder="Select Role"
+                            options={[
+                                { label: 'User', value: UserRoles.User },
+                                { label: 'Vendor', value: UserRoles.Vendor },
+                                { label: 'Breeder', value: UserRoles.Breeder },
+                                { label: 'Admin', value: UserRoles.Admin },
+                                { label: 'Veterinary', value: UserRoles.Veterinary },
+                            ]}
+                        />
 
                         <CustomSelect
                             label="Status"
@@ -267,16 +330,65 @@ export const VendorsPage: React.FC = () => {
                             >
                                 Cancel
                             </button>
-                            <button
-                                type="submit"
+                            <CustomButton
+                                htmlType="submit"
+                                loading={isUpdating}
                                 disabled={!isDirty || isUpdating}
-                                className="px-4 py-2 rounded-lg bg-[#A26CF7] text-white hover:bg-[#8f5de8] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                variant="primary"
+                                className="h-10! px-4! rounded-lg"
                             >
-                                {isUpdating ? 'Saving...' : 'Save Changes'}
-                            </button>
+                                Save Changes
+                            </CustomButton>
                         </div>
                     </form>
                 )}
+            </GenericModal>
+
+            {/* Create Vendor Modal */}
+            <GenericModal
+                isOpen={isCreateModalOpen}
+                onClose={handleCloseCreateModal}
+                title="Create Vendor"
+            >
+                <form onSubmit={handleCreateSubmit(onSubmitCreate)} className="space-y-4">
+                    <CustomInput label="First Name" name="firstName" control={createControl} placeholder="First Name" />
+                    <CustomInput label="Last Name" name="lastName" control={createControl} placeholder="Last Name" />
+                    <CustomInput label="Phone Number" name="phoneNumber" control={createControl} placeholder="Phone Number" />
+                    <CustomInput label="Email" name="email" control={createControl} placeholder="Email" type="email" />
+                    <CustomInput label="Password" name="password" control={createControl} placeholder="Password" type="password" />
+                    <CustomSelect
+                        label="Role"
+                        name="role"
+                        control={createControl}
+                        placeholder="Select Role"
+                        options={[
+                            { label: 'User', value: UserRoles.User },
+                            { label: 'Vendor', value: UserRoles.Vendor },
+                            { label: 'Breeder', value: UserRoles.Breeder },
+                            { label: 'Admin', value: UserRoles.Admin },
+                            { label: 'Veterinary', value: UserRoles.Veterinary },
+                        ]}
+                    />
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <button
+                            type="button"
+                            onClick={handleCloseCreateModal}
+                            className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <CustomButton
+                            htmlType="submit"
+                            loading={isCreating}
+                            disabled={isCreating}
+                            variant="primary"
+                            className="h-10! px-4! rounded-lg"
+                        >
+                            Create Vendor
+                        </CustomButton>
+                    </div>
+                </form>
             </GenericModal>
 
             {/* Delete Confirmation Modal */}
@@ -286,7 +398,8 @@ export const VendorsPage: React.FC = () => {
                 onConfirm={confirmDelete}
                 title="Confirm Delete"
                 message="Are you sure you want to delete this vendor?"
-                confirmText="Confirm"
+                confirmText="Delete"
+                cancelText="Cancel"
             />
         </>
     );

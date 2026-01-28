@@ -1,104 +1,158 @@
-import React, { useState } from 'react';
-import { Dropdown, Avatar, Button, DatePicker } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Dropdown, Avatar, message, Spin } from 'antd';
 import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
-// import { DashboardLayout } from '../../dashboard/components/DashboardLayout';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
 import { GenericModal } from '../../../shared/components/ui/GenericModal';
 import { CustomInput } from '../../../shared/components/ui/CustomInput';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { SearchBar } from '../../../shared/components/ui/SearchBar';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Breeder } from '../types';
+import { useBreeders, useBreeder, useUpdateBreeder, useDeleteBreeder, useCreateBreeder, type Breeder } from '../api/breeders';
 import dayjs from 'dayjs';
-
-// Mock Data
-const mockBreeders: Breeder[] = [
-    { id: '00001', name: 'Christine Brooks', email: 'user1@gmail.com', date: '14 Feb 2025', type: 'Breeders', status: 'Active' },
-    { id: '00002', name: 'Rosie Pearson', email: 'user2@gmail.com', date: '14 Feb 2025', type: 'Breeders', status: 'Offline' },
-    { id: '00003', name: 'Darrell Caldwell', email: 'user3@gmail.com', date: '14 Feb 2025', type: 'Breeders', status: 'Suspended' },
-    { id: '00004', name: 'Gilbert Johnston', email: 'user4@gmail.com', date: '14 Feb 2025', type: 'Breeders', status: 'Active' },
-    { id: '00005', name: 'Alan Cain', email: 'user5@gmail.com', date: '14 Feb 2025', type: 'Breeders', status: 'Offline' },
-    { id: '00006', name: 'Alex Mill', email: 'user6@gmail.com', date: '14 Feb 2025', type: 'Breeders', status: 'Active' },
-];
+import { CustomButton } from '../../../shared/components/ui/CustomButton';
+import { UserRoles } from '../../users/types';
 
 const breederSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
+    firstName: z.string().min(1, 'First Name is required'),
+    lastName: z.string().min(1, 'Last Name is required'),
     email: z.string().email('Invalid email'),
-    type: z.string().min(1, 'Type is required'),
-    date: z.string().min(1, 'Date is required'),
-    status: z.enum(['Active', 'Offline', 'Suspended']),
+    role: z.string().min(1, 'Role is required'),
+    status: z.string().min(1, 'Status is required'),
+});
+
+const createBreederSchema = z.object({
+    firstName: z.string().min(1, 'First Name is required'),
+    lastName: z.string().min(1, 'Last Name is required'),
+    phoneNumber: z.string().min(1, 'Phone Number is required'),
+    email: z.string().email('Invalid email'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    role: z.string().min(1, 'Role is required'),
 });
 
 type BreederSchema = z.infer<typeof breederSchema>;
+type CreateBreederSchema = z.infer<typeof createBreederSchema>;
 
 export const BreedersPage: React.FC = () => {
-    const [breeders, setBreeders] = useState<Breeder[]>(mockBreeders);
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search query
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Fetch Breeders with search
+    const { data: breedersResponse, isLoading } = useBreeders(debouncedSearch);
+    const breeders = breedersResponse?.data || [];
+
+    // Local State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedBreeder, setSelectedBreeder] = useState<Breeder | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [selectedBreederId, setSelectedBreederId] = useState<number | null>(null);
 
-    const { control, handleSubmit, reset, setValue } = useForm<BreederSchema>({
+    // Fetch Single Breeder
+    const { data: singleBreederResponse, isLoading: isLoadingSingleBreeder } = useBreeder(selectedBreederId);
+    const singleBreeder = singleBreederResponse?.data;
+
+    // Mutations
+    const { mutate: updateBreeder, isPending: isUpdating } = useUpdateBreeder();
+    const { mutate: deleteBreeder } = useDeleteBreeder();
+    const { mutate: createBreeder, isPending: isCreating } = useCreateBreeder();
+
+    const { control, handleSubmit, reset, formState: { isDirty } } = useForm<BreederSchema>({
         resolver: zodResolver(breederSchema),
-        defaultValues: {
-            name: '',
-            email: '',
-            type: 'Breeders',
-            date: dayjs().format('DD MMM YYYY'),
-            status: 'Active',
-        }
     });
 
-    const handleCreateClick = () => {
-        setSelectedBreeder(null);
-        reset({
-            name: '',
-            email: '',
-            type: 'Breeders',
-            date: dayjs().format('DD MMM YYYY'),
-            status: 'Active',
-        });
+    const { control: createControl, handleSubmit: handleCreateSubmit, reset: resetCreate } = useForm<CreateBreederSchema>({
+        resolver: zodResolver(createBreederSchema),
+    });
+
+    // When singleBreeder data is fetched, populate the form
+    useEffect(() => {
+        if (singleBreeder && isEditModalOpen) {
+            reset({
+                firstName: singleBreeder.firstName,
+                lastName: singleBreeder.lastName,
+                email: singleBreeder.email,
+                role: singleBreeder.role,
+                status: singleBreeder.status,
+            });
+        }
+    }, [singleBreeder, isEditModalOpen, reset]);
+
+    const handleEditClick = (id: number) => {
+        setSelectedBreederId(id);
         setIsEditModalOpen(true);
     };
 
-    const handleEditClick = (breeder: Breeder) => {
-        setSelectedBreeder(breeder);
-        setValue('name', breeder.name);
-        setValue('email', breeder.email);
-        setValue('type', breeder.type);
-        setValue('date', breeder.date);
-        setValue('status', breeder.status);
-        setIsEditModalOpen(true);
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedBreederId(null);
+        reset({ firstName: '', lastName: '', email: '', role: '', status: '' });
     };
 
-    const handleDeleteClick = (breeder: Breeder) => {
-        setSelectedBreeder(breeder);
+    const handleDeleteClick = (id: number) => {
+        setSelectedBreederId(id);
         setIsDeleteModalOpen(true);
     };
 
     const confirmDelete = () => {
-        if (selectedBreeder) {
-            setBreeders(breeders.filter(b => b.id !== selectedBreeder.id));
-            setIsDeleteModalOpen(false);
-            setSelectedBreeder(null);
+        if (selectedBreederId) {
+            deleteBreeder(selectedBreederId, {
+                onSuccess: () => {
+                    message.success('Breeder deleted successfully');
+                    setIsDeleteModalOpen(false);
+                    setSelectedBreederId(null);
+                },
+                onError: () => {
+                    message.error('Failed to delete breeder');
+                }
+            });
         }
     };
 
     const onSubmitEdit = (data: BreederSchema) => {
-        if (selectedBreeder) {
-            setBreeders(breeders.map(b => (b.id === selectedBreeder.id ? { ...b, ...data } : b)));
-        } else {
-            const newBreeder: Breeder = {
-                id: Math.random().toString(36).substr(2, 5),
-                ...data,
-            };
-            setBreeders([...breeders, newBreeder]);
+        if (selectedBreederId) {
+            updateBreeder({ id: selectedBreederId, data: { ...data } }, {
+                onSuccess: () => {
+                    message.success('Breeder updated successfully');
+                    handleCloseEditModal();
+                },
+                onError: () => {
+                    message.error('Failed to update breeder');
+                }
+            });
         }
-        setIsEditModalOpen(false);
-        setSelectedBreeder(null);
-        reset();
+    };
+
+    const handleCreateClick = () => {
+        setIsCreateModalOpen(true);
+    };
+
+    const handleCloseCreateModal = () => {
+        setIsCreateModalOpen(false);
+        resetCreate();
+    };
+
+    const onSubmitCreate = (data: CreateBreederSchema) => {
+        createBreeder(data, {
+            onSuccess: () => {
+                message.success('Breeder created successfully');
+                handleCloseCreateModal();
+            },
+            onError: () => {
+                message.error('Failed to create breeder');
+            }
+        });
     };
 
     const columns = [
@@ -109,12 +163,12 @@ export const BreedersPage: React.FC = () => {
         },
         {
             title: 'NAME',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text: string) => (
+            dataIndex: 'firstName',
+            key: 'firstName',
+            render: (text: string, record: Breeder) => (
                 <div className="flex items-center gap-3">
-                    <Avatar icon={<UserOutlined />} src={`https://api.dicebear.com/7.x/identicon/svg?seed=${text}`} />
-                    <span className="font-medium text-gray-800">{text}</span>
+                    <Avatar icon={<UserOutlined />} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${text}`} />
+                    <span className="font-medium text-gray-800">{text} {record.lastName}</span>
                 </div>
             ),
         },
@@ -124,14 +178,15 @@ export const BreedersPage: React.FC = () => {
             key: 'email',
         },
         {
-            title: 'DATE',
-            dataIndex: 'date',
-            key: 'date',
+            title: 'Creation DATE',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (date: string) => dayjs(date).format('DD MMM YYYY'),
         },
         {
             title: 'TYPE',
-            dataIndex: 'type',
-            key: 'type',
+            dataIndex: 'role',
+            key: 'role',
         },
         {
             title: 'STATUS',
@@ -142,6 +197,7 @@ export const BreedersPage: React.FC = () => {
                 if (status === 'Active') className += "bg-green-100 text-green-600";
                 if (status === 'Offline') className += "bg-purple-100 text-purple-600";
                 if (status === 'Suspended') className += "bg-red-100 text-red-600";
+                if (!['Active', 'Offline', 'Suspended'].includes(status)) className += "bg-gray-100 text-gray-600";
 
                 return <span className={className}>{status}</span>;
             },
@@ -155,14 +211,14 @@ export const BreedersPage: React.FC = () => {
                         key: 'edit',
                         icon: <EditOutlined />,
                         label: 'Edit',
-                        onClick: () => handleEditClick(record),
+                        onClick: () => handleEditClick(record.id),
                     },
                     {
                         key: 'delete',
                         icon: <DeleteOutlined />,
                         label: 'Delete',
                         danger: true,
-                        onClick: () => handleDeleteClick(record),
+                        onClick: () => handleDeleteClick(record.id),
                     },
                 ];
 
@@ -181,37 +237,30 @@ export const BreedersPage: React.FC = () => {
         },
     ];
 
-    // Disable dates before today (keep today enabled)
-    const disabledDate = (current: dayjs.Dayjs) => {
-        // If editing, disable dates before the original date
-        // If creating, disable dates before today
-        const minDate = selectedBreeder && selectedBreeder.date
-            ? dayjs(selectedBreeder.date)
-            : dayjs();
-
-        return current && current < minDate.startOf('day');
-    };
-
     return (
         <>
-            <div className="flex items-center mb-6 justify-between flex-wrap">
-                <div className="flex md:items-center flex-col md:flex-row ">
-                    <h1 className="text-2xl font-bold text-gray-800">Breeders</h1>
-                    <SearchBar className="md:ml-5 w-64 md:w-96 border-none my-4 md:my-0" onSearch={(val: string) => console.log(val)} />
-                </div>
-                <Button
-                    icon={<PlusOutlined />}
-                    className=" bg-buttonbgcolor! text-white! border-none! hover:bg-[#8f5de8]! h-11! px-6 font-semibold rounded-lg shadow-sm"
-                    onClick={handleCreateClick}
-                >
-                    Create Breeder
-                </Button>
-            </div>
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <h1 className="text-2xl font-bold text-gray-800">Breeders </h1>
 
+                    <SearchBar
+                        className="w-96 border-none ml-5"
+                        placeholder="Search Breeders..."
+                        onSearch={(val: string) => setSearchQuery(val)}
+                    />
+                </div>
+                <CustomButton
+                    onClick={handleCreateClick}
+                    className="h-11! px-6! rounded-lg "
+                >
+                    <PlusOutlined />
+                    Create Breeder
+                </CustomButton>
+            </div>
             <GenericTable
                 columns={columns}
                 data={breeders}
-                loading={false}
+                loading={isLoading}
                 rowKey="id"
             />
 
@@ -219,64 +268,108 @@ export const BreedersPage: React.FC = () => {
             <GenericModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
-                title={selectedBreeder ? "Edit Breeder" : "Create Breeder"}
+                title="Edit Breeder"
             >
-                <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-4">
-                    <CustomInput label="Name" name="name" control={control} placeholder="Name" />
-                    <CustomInput label="Email" name="email" control={control} placeholder="Email" />
-                    <CustomSelect
-                        label="Type"
-                        name="type"
-                        control={control}
-                        placeholder="Select Type"
-                        options={[
-                            { label: 'Breeders', value: 'Breeders' },
-                        ]}
-                    />
-
-                    <div>
-                        <label className="mb-2 text-sm font-medium text-gray-700 block">Date</label>
-                        <Controller
-                            control={control}
-                            name="date"
-                            render={({ field }) => (
-                                <DatePicker
-                                    className="w-full h-11"
-                                    format="DD MMM YYYY"
-                                    value={field.value ? dayjs(field.value) : null}
-                                    onChange={(date) => field.onChange(date ? date.format('DD MMM YYYY') : '')}
-                                    disabledDate={disabledDate}
-                                />
-                            )}
-                        />
+                {isLoadingSingleBreeder ? (
+                    <div className="flex justify-center py-8">
+                        <Spin size="large" />
                     </div>
+                ) : (
+                    <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-4">
+                        <CustomInput label="Name" name="firstName" control={control} placeholder="First Name" />
+                        <CustomInput label="Last Name" name="lastName" control={control} placeholder="Last Name" />
+                        <CustomInput label="Email" name="email" control={control} placeholder="Email" />
+                        <CustomSelect
+                            label="Type"
+                            name="role"
+                            control={control}
+                            placeholder="Select Role"
+                            options={[
+                                { label: 'User', value: UserRoles.User },
+                                { label: 'Vendor', value: UserRoles.Vendor },
+                                { label: 'Breeder', value: UserRoles.Breeder },
+                                { label: 'Admin', value: UserRoles.Admin },
+                                { label: 'Veterinary', value: UserRoles.Veterinary },
+                            ]}
+                        />
 
+                        <CustomSelect
+                            label="Status"
+                            name="status"
+                            control={control}
+                            placeholder="Select Status"
+                            options={[
+                                { label: 'Active', value: 'Active' },
+                                { label: 'Offline', value: 'Offline' },
+                                { label: 'Suspended', value: 'Suspended' },
+                            ]}
+                        />
+
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                type="button"
+                                onClick={handleCloseEditModal}
+                                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <CustomButton
+                                htmlType="submit"
+                                loading={isUpdating}
+                                disabled={!isDirty || isUpdating}
+                                variant="primary"
+                                className="h-10! px-4! rounded-lg"
+                            >
+                                Save Changes
+                            </CustomButton>
+                        </div>
+                    </form>
+                )}
+            </GenericModal>
+
+            {/* Create Breeder Modal */}
+            <GenericModal
+                isOpen={isCreateModalOpen}
+                onClose={handleCloseCreateModal}
+                title="Create Breeder"
+            >
+                <form onSubmit={handleCreateSubmit(onSubmitCreate)} className="space-y-4">
+                    <CustomInput label="First Name" name="firstName" control={createControl} placeholder="First Name" />
+                    <CustomInput label="Last Name" name="lastName" control={createControl} placeholder="Last Name" />
+                    <CustomInput label="Phone Number" name="phoneNumber" control={createControl} placeholder="Phone Number" />
+                    <CustomInput label="Email" name="email" control={createControl} placeholder="Email" type="email" />
+                    <CustomInput label="Password" name="password" control={createControl} placeholder="Password" type="password" />
                     <CustomSelect
-                        label="Status"
-                        name="status"
-                        control={control}
-                        placeholder="Select Status"
+                        label="Role"
+                        name="role"
+                        control={createControl}
+                        placeholder="Select Role"
                         options={[
-                            { label: 'Active', value: 'Active' },
-                            { label: 'Offline', value: 'Offline' },
-                            { label: 'Suspended', value: 'Suspended' },
+                            { label: 'User', value: UserRoles.User },
+                            { label: 'Vendor', value: UserRoles.Vendor },
+                            { label: 'Breeder', value: UserRoles.Breeder },
+                            { label: 'Admin', value: UserRoles.Admin },
+                            { label: 'Veterinary', value: UserRoles.Veterinary },
                         ]}
                     />
 
                     <div className="flex justify-end gap-3 mt-6">
                         <button
                             type="button"
-                            onClick={() => setIsEditModalOpen(false)}
+                            onClick={handleCloseCreateModal}
                             className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
                         >
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 rounded-lg bg-[#A26CF7] text-white hover:bg-[#8f5de8] transition-colors shadow-md"
+                        <CustomButton
+                            htmlType="submit"
+                            loading={isCreating}
+                            disabled={isCreating}
+                            variant="primary"
+                            className="h-10! px-4! rounded-lg"
                         >
-                            Save Changes
-                        </button>
+                            Create Breeder
+                        </CustomButton>
                     </div>
                 </form>
             </GenericModal>
@@ -288,7 +381,8 @@ export const BreedersPage: React.FC = () => {
                 onConfirm={confirmDelete}
                 title="Confirm Delete"
                 message="Are you sure you want to delete this breeder?"
-                confirmText="Confirm"
+                confirmText="Delete"
+                cancelText="Cancel"
             />
         </>
     );

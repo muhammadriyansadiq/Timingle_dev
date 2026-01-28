@@ -27,6 +27,15 @@ export interface SingleVendorResponse {
     data: Vendor;
 }
 
+export interface CreateVendorPayload {
+    firstName: string;
+    lastName: string;
+    phoneNumber: string;
+    email: string;
+    password: string;
+    role: string;
+}
+
 export interface UpdateVendorPayload {
     firstName?: string;
     lastName?: string;
@@ -49,6 +58,22 @@ export const useVendors = (search?: string) => {
     return useQuery({
         queryKey: ['vendors', search],
         queryFn: () => getVendors(search),
+    });
+};
+
+// Create Vendor
+export const createVendor = async (data: CreateVendorPayload): Promise<SingleVendorResponse> => {
+    const response = await apiClient.post<SingleVendorResponse>('/user', data);
+    return response.data;
+};
+
+export const useCreateVendor = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: createVendor,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['vendors'] });
+        },
     });
 };
 
