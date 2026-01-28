@@ -37,15 +37,16 @@ export interface UpdateUserPayload {
 }
 
 // Fetch all users
-export const getUsers = async (): Promise<UserResponse> => {
-    const response = await apiClient.get<UserResponse>('/user');
+export const getUsers = async (search?: string): Promise<UserResponse> => {
+    const params = search ? { search } : {};
+    const response = await apiClient.get<UserResponse>('/user', { params });
     return response.data;
 };
 
-export const useUsers = () => {
+export const useUsers = (search?: string) => {
     return useQuery({
-        queryKey: ['users'],
-        queryFn: getUsers,
+        queryKey: ['users', search],
+        queryFn: () => getUsers(search),
     });
 };
 

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Dropdown, Avatar, Button, DatePicker } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Dropdown, Avatar, message, Spin } from 'antd';
+import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined } from '@ant-design/icons';
 // import { DashboardLayout } from '../../dashboard/components/DashboardLayout';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
@@ -8,97 +8,111 @@ import { GenericModal } from '../../../shared/components/ui/GenericModal';
 import { CustomInput } from '../../../shared/components/ui/CustomInput';
 import { CustomSelect } from '../../../shared/components/ui/CustomSelect';
 import { SearchBar } from '../../../shared/components/ui/SearchBar';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Vendor } from '../types';
+import { useVendors, useVendor, useUpdateVendor, useDeleteVendor, type Vendor } from '../api/vendors';
 import dayjs from 'dayjs';
 
-// Mock Data
-const mockVendors: Vendor[] = [
-    { id: '00001', name: 'Christine Brooks', email: 'user1@gmail.com', date: '14 Feb 2025', type: 'Vendors', status: 'Active' },
-    { id: '00002', name: 'Rosie Pearson', email: 'user2@gmail.com', date: '14 Feb 2025', type: 'Vendors', status: 'Offline' },
-    { id: '00003', name: 'Darrell Caldwell', email: 'user3@gmail.com', date: '14 Feb 2025', type: 'Vendors', status: 'Suspended' },
-    { id: '00004', name: 'Gilbert Johnston', email: 'user4@gmail.com', date: '14 Feb 2025', type: 'Vendors', status: 'Active' },
-    { id: '00005', name: 'Alan Cain', email: 'user5@gmail.com', date: '14 Feb 2025', type: 'Vendors', status: 'Offline' },
-    { id: '00006', name: 'Alfred Murray', email: 'user6@gmail.com', date: '14 Feb 2025', type: 'Vendors', status: 'Active' },
-];
-
 const vendorSchema = z.object({
-    name: z.string().min(1, 'Name is required'),
+    firstName: z.string().min(1, 'First Name is required'),
+    lastName: z.string().min(1, 'Last Name is required'),
     email: z.string().email('Invalid email'),
-    type: z.string().min(1, 'Type is required'),
-    date: z.string().min(1, 'Date is required'),
     status: z.enum(['Active', 'Offline', 'Suspended']),
 });
 
 type VendorSchema = z.infer<typeof vendorSchema>;
 
 export const VendorsPage: React.FC = () => {
-    const [vendors, setVendors] = useState<Vendor[]>(mockVendors);
+    // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search query
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500); // 500ms debounce
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Fetch Vendors with search
+    const { data: vendorsResponse, isLoading } = useVendors(debouncedSearch);
+    const vendors = vendorsResponse?.data || [];
+
+    // Local State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+    const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
 
-    const { control, handleSubmit, reset, setValue } = useForm<VendorSchema>({
+    // Fetch Single Vendor
+    const { data: singleVendorResponse, isLoading: isLoadingSingleVendor } = useVendor(selectedVendorId);
+    const singleVendor = singleVendorResponse?.data;
+
+    // Mutations
+    const { mutate: updateVendor, isPending: isUpdating } = useUpdateVendor();
+    const { mutate: deleteVendor } = useDeleteVendor();
+
+    const { control, handleSubmit, reset, formState: { isDirty } } = useForm<VendorSchema>({
         resolver: zodResolver(vendorSchema),
-        defaultValues: {
-            name: '',
-            email: '',
-            type: 'Vendors',
-            date: dayjs().format('DD MMM YYYY'),
-            status: 'Active',
-        }
     });
 
-    const handleCreateClick = () => {
-        setSelectedVendor(null);
-        reset({
-            name: '',
-            email: '',
-            type: 'Vendors',
-            date: dayjs().format('DD MMM YYYY'),
-            status: 'Active',
-        });
+    // When singleVendor data is fetched, populate the form
+    useEffect(() => {
+        if (singleVendor && isEditModalOpen) {
+            reset({
+                firstName: singleVendor.firstName,
+                lastName: singleVendor.lastName,
+                email: singleVendor.email,
+                status: singleVendor.status as 'Active' | 'Offline' | 'Suspended',
+            });
+        }
+    }, [singleVendor, isEditModalOpen, reset]);
+
+    const handleEditClick = (id: number) => {
+        setSelectedVendorId(id);
         setIsEditModalOpen(true);
     };
 
-    const handleEditClick = (vendor: Vendor) => {
-        setSelectedVendor(vendor);
-        setValue('name', vendor.name);
-        setValue('email', vendor.email);
-        setValue('type', vendor.type);
-        setValue('date', vendor.date);
-        setValue('status', vendor.status);
-        setIsEditModalOpen(true);
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedVendorId(null);
+        reset({ firstName: '', lastName: '', email: '', status: 'Active' });
     };
 
-    const handleDeleteClick = (vendor: Vendor) => {
-        setSelectedVendor(vendor);
+    const handleDeleteClick = (id: number) => {
+        setSelectedVendorId(id);
         setIsDeleteModalOpen(true);
     };
 
     const confirmDelete = () => {
-        if (selectedVendor) {
-            setVendors(vendors.filter(v => v.id !== selectedVendor.id));
-            setIsDeleteModalOpen(false);
-            setSelectedVendor(null);
+        if (selectedVendorId) {
+            deleteVendor(selectedVendorId, {
+                onSuccess: () => {
+                    message.success('Vendor deleted successfully');
+                    setIsDeleteModalOpen(false);
+                    setSelectedVendorId(null);
+                },
+                onError: () => {
+                    message.error('Failed to delete vendor');
+                }
+            });
         }
     };
 
     const onSubmitEdit = (data: VendorSchema) => {
-        if (selectedVendor) {
-            setVendors(vendors.map(v => (v.id === selectedVendor.id ? { ...v, ...data } : v)));
-        } else {
-            const newVendor: Vendor = {
-                id: Math.random().toString(36).substr(2, 5),
-                ...data,
-            };
-            setVendors([...vendors, newVendor]);
+        if (selectedVendorId) {
+            updateVendor({ id: selectedVendorId, data: { ...data } }, {
+                onSuccess: () => {
+                    message.success('Vendor updated successfully');
+                    handleCloseEditModal();
+                },
+                onError: () => {
+                    message.error('Failed to update vendor');
+                }
+            });
         }
-        setIsEditModalOpen(false);
-        setSelectedVendor(null);
-        reset();
     };
 
     const columns = [
@@ -109,12 +123,12 @@ export const VendorsPage: React.FC = () => {
         },
         {
             title: 'NAME',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text: string) => (
+            dataIndex: 'firstName',
+            key: 'firstName',
+            render: (text: string, record: Vendor) => (
                 <div className="flex items-center gap-3">
                     <Avatar icon={<UserOutlined />} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${text}`} />
-                    <span className="font-medium text-gray-800">{text}</span>
+                    <span className="font-medium text-gray-800">{text} {record.lastName}</span>
                 </div>
             ),
         },
@@ -125,13 +139,14 @@ export const VendorsPage: React.FC = () => {
         },
         {
             title: 'DATE',
-            dataIndex: 'date',
-            key: 'date',
+            dataIndex: 'createdAt',
+            key: 'createdAt',
+            render: (date: string) => dayjs(date).format('DD MMM YYYY'),
         },
         {
             title: 'TYPE',
-            dataIndex: 'type',
-            key: 'type',
+            dataIndex: 'role',
+            key: 'role',
         },
         {
             title: 'STATUS',
@@ -155,14 +170,14 @@ export const VendorsPage: React.FC = () => {
                         key: 'edit',
                         icon: <EditOutlined />,
                         label: 'Edit',
-                        onClick: () => handleEditClick(record),
+                        onClick: () => handleEditClick(record.id),
                     },
                     {
                         key: 'delete',
                         icon: <DeleteOutlined />,
                         label: 'Delete',
                         danger: true,
-                        onClick: () => handleDeleteClick(record),
+                        onClick: () => handleDeleteClick(record.id),
                     },
                 ];
 
@@ -181,16 +196,7 @@ export const VendorsPage: React.FC = () => {
         },
     ];
 
-    // Disable dates before today (keep today enabled)
-    const disabledDate = (current: dayjs.Dayjs) => {
-        // If editing, disable dates before the original date
-        // If creating, disable dates before today
-        const minDate = selectedVendor && selectedVendor.date
-            ? dayjs(selectedVendor.date)
-            : dayjs();
 
-        return current && current < minDate.startOf('day');
-    };
 
     return (
         <>
@@ -211,21 +217,17 @@ export const VendorsPage: React.FC = () => {
                 <div className="flex flex-wrap gap-2 items-center">
                     <h1 className="text-2xl font-bold text-gray-800">Vendors </h1>
 
-                    <SearchBar className="w-64 border-none md:ml-2" placeholder="Search Vendors..." />
+                    <SearchBar
+                        className="w-64 border-none md:ml-2"
+                        placeholder="Search Vendors..."
+                        onSearch={(val: string) => setSearchQuery(val)}
+                    />
                 </div>
-
-                <Button
-                    icon={<PlusOutlined />}
-                    className="!bg-yellow-500 !text-text !border-none hover:!bg-primary !h-11 px-6 font-semibold"
-                    onClick={handleCreateClick}
-                >
-                    Add Featured
-                </Button>
             </div>
             <GenericTable
                 columns={columns}
                 data={vendors}
-                loading={false}
+                loading={isLoading}
                 rowKey="id"
             />
 
@@ -233,66 +235,48 @@ export const VendorsPage: React.FC = () => {
             <GenericModal
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
-                title={selectedVendor ? "Edit Vendor" : "Create Vendor"}
+                title="Edit Vendor"
             >
-                <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-4">
-                    <CustomInput label="Name" name="name" control={control} placeholder="Name" />
-                    <CustomInput label="Email" name="email" control={control} placeholder="Email" />
-                    <CustomSelect
-                        label="Type"
-                        name="type"
-                        control={control}
-                        placeholder="Select Type"
-                        options={[
-                            { label: 'Vendors', value: 'Vendors' },
-                        ]}
-                    />
+                {isLoadingSingleVendor ? (
+                    <div className="flex justify-center py-8">
+                        <Spin size="large" />
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit(onSubmitEdit)} className="space-y-4">
+                        <CustomInput label="First Name" name="firstName" control={control} placeholder="First Name" />
+                        <CustomInput label="Last Name" name="lastName" control={control} placeholder="Last Name" />
+                        <CustomInput label="Email" name="email" control={control} placeholder="Email" />
 
-                    <div>
-                        <label className="mb-2 text-sm font-medium text-gray-700 block">Date</label>
-                        <Controller
+                        <CustomSelect
+                            label="Status"
+                            name="status"
                             control={control}
-                            name="date"
-                            render={({ field }) => (
-                                <DatePicker
-                                    className="w-full h-11"
-                                    format="DD MMM YYYY"
-                                    value={field.value ? dayjs(field.value) : null}
-                                    onChange={(date) => field.onChange(date ? date.format('DD MMM YYYY') : '')}
-                                    disabledDate={disabledDate}
-                                />
-                            )}
+                            placeholder="Select Status"
+                            options={[
+                                { label: 'Active', value: 'Active' },
+                                { label: 'Offline', value: 'Offline' },
+                                { label: 'Suspended', value: 'Suspended' },
+                            ]}
                         />
-                    </div>
 
-                    <CustomSelect
-                        label="Status"
-                        name="status"
-                        control={control}
-                        placeholder="Select Status"
-                        options={[
-                            { label: 'Active', value: 'Active' },
-                            { label: 'Offline', value: 'Offline' },
-                            { label: 'Suspended', value: 'Suspended' },
-                        ]}
-                    />
-
-                    <div className="flex justify-end gap-3 mt-6">
-                        <button
-                            type="button"
-                            onClick={() => setIsEditModalOpen(false)}
-                            className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 rounded-lg bg-[#A26CF7] text-white hover:bg-[#8f5de8] transition-colors shadow-md"
-                        >
-                            Save Changes
-                        </button>
-                    </div>
-                </form>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <button
+                                type="button"
+                                onClick={handleCloseEditModal}
+                                className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={!isDirty || isUpdating}
+                                className="px-4 py-2 rounded-lg bg-[#A26CF7] text-white hover:bg-[#8f5de8] transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isUpdating ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </form>
+                )}
             </GenericModal>
 
             {/* Delete Confirmation Modal */}

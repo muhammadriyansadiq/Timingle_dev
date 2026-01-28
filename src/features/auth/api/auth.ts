@@ -7,12 +7,14 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-    token: string;
-    user: {
-        id: string;
-        email: string;
-        role: string;
-        // add other user fields if known
+    data: {
+        token: string;
+        user: {
+            id: string;
+            email: string;
+            role: string;
+            // add other user fields if known
+        };
     };
 }
 
@@ -26,7 +28,8 @@ export const useLogin = () => {
         mutationFn: login,
         onSuccess: (data) => {
             // Save token
-            localStorage.setItem('token', data.token);
+            console.log(data, "checking");
+            localStorage.setItem('token', data.data.token);
             // You might want to update global user state here if you have a context/store
         },
     });
