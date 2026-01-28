@@ -71,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile, collapsed }) => {
                             <div key={item.key}>
                                 <div
                                     onClick={() => toggleSubmenu(item.key)}
-                                    className={`flex items-center justify-between cursor-pointer ${collapsed ? 'justify-center px-2' : 'px-4'} py-3 rounded-lg transition-colors ${isActive ? 'bg-orange-50 text-orange-600' : 'text-text hover:text-orange-600 hover:bg-orange-50'}`}
+                                    className={`flex items-center justify-between cursor-pointer ${collapsed ? 'justify-center px-2' : 'px-4'} py-3 rounded-lg transition-colors ${isActive ? 'bg-purple-50 text-primary' : 'text-text hover:text-primary hover:bg-purple-50'}`}
                                     title={collapsed ? item.label : ''}
                                 >
                                     <div className="flex items-center">
@@ -91,8 +91,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile, collapsed }) => {
                                                 key={child.key}
                                                 to={child.key}
                                                 className={`block px-4 py-2 rounded-lg text-sm transition-colors ${location.pathname === child.key
-                                                    ? 'text-[#A26CF7] font-medium bg-purple-50'
-                                                    : 'text-gray-500 hover:text-[#A26CF7] hover:bg-purple-50'
+                                                    ? 'bg-primary text-white shadow-md font-medium'
+                                                    : 'text-gray-500 hover:text-primary hover:bg-purple-50'
                                                     }`}
                                             >
                                                 {child.label}
