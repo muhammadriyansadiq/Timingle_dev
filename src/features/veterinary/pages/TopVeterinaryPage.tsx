@@ -8,10 +8,10 @@ import { CustomImageUpload } from '../../../shared/components/ui/CustomImageUplo
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { Veterinary } from '../types';
+// import type { Veterinary } from '../types';
 
 // Mock Data
-const mockTopVets: Veterinary[] = [
+const mockTopVets: any[] = [
     { id: '1', name: 'DANIELLE JONES', image: 'https://i.pravatar.cc/150?u=1', type: 'DVM' }, // Using mock images
     { id: '2', name: 'NITA LANDRY', image: 'https://i.pravatar.cc/150?u=2', type: 'DVM' },
     { id: '3', name: 'MICHAELL BRODMAN', image: 'https://i.pravatar.cc/150?u=3', type: 'MD' },
@@ -30,10 +30,10 @@ const topVetSchema = z.object({
 type TopVetSchema = z.infer<typeof topVetSchema>;
 
 export const TopVeterinaryPage: React.FC = () => {
-    const [vets, setVets] = useState<Veterinary[]>(mockTopVets);
+    const [vets, setVets] = useState<any[]>(mockTopVets);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedVet, setSelectedVet] = useState<Veterinary | null>(null);
+    const [selectedVet, setSelectedVet] = useState<any | null>(null);
 
     const { control, handleSubmit, reset, setValue } = useForm<TopVetSchema>({
         resolver: zodResolver(topVetSchema),
@@ -52,14 +52,14 @@ export const TopVeterinaryPage: React.FC = () => {
         setIsEditModalOpen(true);
     };
 
-    const handleEditClick = (vet: Veterinary) => {
+    const handleEditClick = (vet: any) => {
         setSelectedVet(vet);
         setValue('name', vet.name);
         setValue('image', vet.image || '');
         setIsEditModalOpen(true);
     };
 
-    const handleDeleteClick = (vet: Veterinary) => {
+    const handleDeleteClick = (vet: any) => {
         setSelectedVet(vet);
         setIsDeleteModalOpen(true);
     };
@@ -76,7 +76,7 @@ export const TopVeterinaryPage: React.FC = () => {
         if (selectedVet) {
             setVets(vets.map(v => (v.id === selectedVet.id ? { ...v, ...data } : v)));
         } else {
-            const newVet: Veterinary = {
+            const newVet: any = {
                 id: Math.random().toString(36).substr(2, 5),
                 ...data,
             };
