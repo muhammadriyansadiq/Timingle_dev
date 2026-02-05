@@ -15,6 +15,8 @@ import { PaymentsPage } from './features/payments/pages/PaymentsPage';
 import { PairsPage } from './features/pairs/pages/PairsPage';
 import { VeterinaryListPage } from './features/veterinary/pages/VeterinaryListPage';
 import { TopVeterinaryPage } from './features/veterinary/pages/TopVeterinaryPage';
+import { FeaturedListingPage } from './features/featured-listing/pages/FeaturedListingPage';
+import { FeaturedPricingPage } from './features/featured-pricing/pages/FeaturedPricingPage';
 import { MainLayout } from './features/dashboard/components/MainLayout';
 
 function App() {
@@ -39,6 +41,8 @@ function App() {
           <Route path="/pairs" element={<PairsPage />} />
           <Route path="/veterinary/list" element={<VeterinaryListPage />} />
           <Route path="/veterinary/top" element={<TopVeterinaryPage />} />
+          <Route path="/featured-listing" element={<FeaturedListingPage />} />
+          <Route path="/featured-pricing" element={<FeaturedPricingPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
