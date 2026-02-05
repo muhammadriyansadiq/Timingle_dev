@@ -3,7 +3,7 @@ import {
     DashboardOutlined, UserOutlined, ShopOutlined,
     DeploymentUnitOutlined, MedicineBoxOutlined,
     ShoppingCartOutlined, FileTextOutlined,
-    SettingOutlined, LogoutOutlined, FormOutlined, UnorderedListOutlined, PictureOutlined
+    SettingOutlined, LogoutOutlined, FormOutlined, UnorderedListOutlined, PictureOutlined, DollarOutlined
 } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
@@ -12,7 +12,8 @@ import "./style.css";
 const menuItems = [
     { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
     { key: '/users', icon: <UserOutlined />, label: 'User Management', hasSubmenu: true },
-    { key: '/listing', icon: <UnorderedListOutlined />, label: 'Listing' },
+    { key: '/featured-listing', icon: <UnorderedListOutlined />, label: 'Listing' },
+    { key: '/featured-pricing', icon: <DollarOutlined />, label: 'Featured Pricing' },
     { key: '/promotion-banner', icon: <PictureOutlined />, label: 'Promotion Banner' },
     { key: '/vendors', icon: <ShopOutlined />, label: 'Vendors' },
     { key: '/pairs', icon: <UserOutlined />, label: 'Pairs Manager' },
