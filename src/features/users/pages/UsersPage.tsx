@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Avatar, message, Spin } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined, KeyOutlined } from '@ant-design/icons';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
 import { GenericModal } from '../../../shared/components/ui/GenericModal';
@@ -15,6 +15,7 @@ import { useUsers, useUpdateUser, useDeleteUser, useUser, useCreateUser } from '
 import type { User } from '../api/users';
 import { CustomButton } from '../../../shared/components/ui/CustomButton';
 import { UserRoles } from '../types';
+import { ChangePasswordModal } from '../../auth/components/ChangePasswordModal';
 
 const userSchema = z.object({
     firstName: z.string().min(1, 'First Name is required'),
@@ -59,6 +60,8 @@ export const UsersPage: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+    const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
     const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
     // 2. Fetch Single User (Enabled only when selectedUserId is set)
@@ -143,6 +146,17 @@ export const UsersPage: React.FC = () => {
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
         resetCreate();
+        resetCreate();
+    };
+
+    const handleChangePasswordClick = (email: string) => {
+        setSelectedUserEmail(email);
+        setIsChangePasswordModalOpen(true);
+    };
+
+    const handleCloseChangePasswordModal = () => {
+        setIsChangePasswordModalOpen(false);
+        setSelectedUserEmail('');
     };
 
     const onSubmitCreate = (data: CreateUserSchema) => {
@@ -221,6 +235,12 @@ export const UsersPage: React.FC = () => {
                         label: 'Delete',
                         danger: true,
                         onClick: () => handleDeleteClick(record.id),
+                    },
+                    {
+                        key: 'change-password',
+                        icon: <KeyOutlined />,
+                        label: 'Change Password',
+                        onClick: () => handleChangePasswordClick(record.email),
                     },
                 ];
 
@@ -387,6 +407,12 @@ export const UsersPage: React.FC = () => {
                 message="Are you sure you want to delete this user?"
                 confirmText="Delete"
                 cancelText="Cancel"
+            />
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                isOpen={isChangePasswordModalOpen}
+                onClose={handleCloseChangePasswordModal}
+                email={selectedUserEmail}
             />
         </>
     );

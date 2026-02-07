@@ -18,6 +18,7 @@ import { TopVeterinaryPage } from './features/veterinary/pages/TopVeterinaryPage
 import { FeaturedListingPage } from './features/featured-listing/pages/FeaturedListingPage';
 import { FeaturedPricingPage } from './features/featured-pricing/pages/FeaturedPricingPage';
 import { MainLayout } from './features/dashboard/components/MainLayout';
+import { RequireAuth } from './features/auth/components/RequireAuth';
 
 function App() {
   return (
@@ -28,24 +29,26 @@ function App() {
         <Route path="/extra" element={<Extra />} />
 
         {/* Authenticated Routes with Persistent Sidebar */}
-        <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/listing" element={<ListingPage />} />
-          <Route path="/promotion-banner" element={<PromotionBannerPage />} />
-          <Route path="/vendors" element={<VendorsPage />} />
-          <Route path="/feeds" element={<FeedsPage />} />
-          <Route path="/breeders" element={<BreedersPage />} />
-          <Route path="/requests" element={<FeedRequestsPage />} />
-          <Route path="/payments" element={<PaymentsPage />} />
-          <Route path="/pairs" element={<PairsPage />} />
-          <Route path="/veterinary/list" element={<VeterinaryListPage />} />
-          <Route path="/veterinary/top" element={<TopVeterinaryPage />} />
-          <Route path="/featured-listing" element={<FeaturedListingPage />} />
-          <Route path="/featured-pricing" element={<FeaturedPricingPage />} />
+        <Route element={<RequireAuth />}>
+          <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/listing" element={<ListingPage />} />
+            <Route path="/promotion-banner" element={<PromotionBannerPage />} />
+            <Route path="/vendors" element={<VendorsPage />} />
+            <Route path="/feeds" element={<FeedsPage />} />
+            <Route path="/breeders" element={<BreedersPage />} />
+            <Route path="/requests" element={<FeedRequestsPage />} />
+            <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/pairs" element={<PairsPage />} />
+            <Route path="/veterinary/list" element={<VeterinaryListPage />} />
+            <Route path="/veterinary/top" element={<TopVeterinaryPage />} />
+            <Route path="/featured-listing" element={<FeaturedListingPage />} />
+            <Route path="/featured-pricing" element={<FeaturedPricingPage />} />
+          </Route>
         </Route>
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Providers>
   );

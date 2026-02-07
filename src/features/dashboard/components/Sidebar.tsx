@@ -5,7 +5,7 @@ import {
     ShoppingCartOutlined, FileTextOutlined,
     SettingOutlined, LogoutOutlined, FormOutlined, UnorderedListOutlined, PictureOutlined, DollarOutlined
 } from '@ant-design/icons';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { CaretDownOutlined, CaretRightOutlined } from '@ant-design/icons';
 import "./style.css";
@@ -43,7 +43,13 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ mobile, collapsed }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        navigate('/login');
+    };
 
     const toggleSubmenu = (key: string) => {
         setOpenSubmenus(prev => ({ ...prev, [key]: !prev[key] }));
@@ -123,7 +129,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobile, collapsed }) => {
             </nav>
 
             <div className="p-4 mt-auto">
-                <button className={`flex items-center ${collapsed ? 'justify-center px-2' : 'px-4'} py-3 text-text hover:text-red-500 transition-colors w-full`}>
+                <button
+                    onClick={handleLogout}
+                    className={`flex items-center ${collapsed ? 'justify-center px-2' : 'px-4'} py-3 text-text hover:text-red-500 transition-colors w-full`}
+                >
                     <LogoutOutlined className={`text-lg ${collapsed ? '' : 'mr-3'}`} />
                     {!collapsed && <span className="font-medium text-sm">Sign Out</span>}
                 </button>

@@ -12,6 +12,7 @@ interface CustomInputProps {
     className?: string;
     description?: string; // For accessibility or extra info
     label?: string;
+    disabled?: boolean;
 }
 
 // ... imports
@@ -23,6 +24,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
     type = 'text',
     className,
     label,
+    disabled,
 }) => {
     return (
         <div>
@@ -41,6 +43,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
                                 className={`h-12 rounded-lg border-none bg-white ${className || ''}`}
                                 iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                                 status={error ? 'error' : ''}
+                                disabled={disabled}
                             />
                         ) : (
                             <Input
@@ -51,6 +54,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
                                 placeholder={placeholder}
                                 className={`h-12 bg-white border-none focus:border-none focus:ring-0 ${className || ''}`}
                                 status={error ? 'error' : ''}
+                                disabled={disabled}
                             />
                         )}
                         {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Avatar, message, Spin } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined, KeyOutlined } from '@ant-design/icons';
 // import { DashboardLayout } from '../../dashboard/components/DashboardLayout';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
@@ -15,6 +15,7 @@ import { useVendors, useVendor, useUpdateVendor, useDeleteVendor, useCreateVendo
 import dayjs from 'dayjs';
 import { CustomButton } from '../../../shared/components/ui/CustomButton';
 import { UserRoles } from '../../users/types';
+import { ChangePasswordModal } from '../../auth/components/ChangePasswordModal';
 
 const vendorSchema = z.object({
     firstName: z.string().min(1, 'First Name is required'),
@@ -58,6 +59,8 @@ export const VendorsPage: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+    const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
     const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
 
     // Fetch Single Vendor
@@ -142,6 +145,17 @@ export const VendorsPage: React.FC = () => {
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
         resetCreate();
+        resetCreate();
+    };
+
+    const handleChangePasswordClick = (email: string) => {
+        setSelectedUserEmail(email);
+        setIsChangePasswordModalOpen(true);
+    };
+
+    const handleCloseChangePasswordModal = () => {
+        setIsChangePasswordModalOpen(false);
+        setSelectedUserEmail('');
     };
 
     const onSubmitCreate = (data: CreateVendorSchema) => {
@@ -220,6 +234,12 @@ export const VendorsPage: React.FC = () => {
                         label: 'Delete',
                         danger: true,
                         onClick: () => handleDeleteClick(record.id),
+                    },
+                    {
+                        key: 'change-password',
+                        icon: <KeyOutlined />,
+                        label: 'Change Password',
+                        onClick: () => handleChangePasswordClick(record.email),
                     },
                 ];
 
@@ -400,6 +420,12 @@ export const VendorsPage: React.FC = () => {
                 message="Are you sure you want to delete this vendor?"
                 confirmText="Delete"
                 cancelText="Cancel"
+            />
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                isOpen={isChangePasswordModalOpen}
+                onClose={handleCloseChangePasswordModal}
+                email={selectedUserEmail}
             />
         </>
     );
