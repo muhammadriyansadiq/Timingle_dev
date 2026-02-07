@@ -28,9 +28,25 @@ export const useLogin = () => {
         mutationFn: login,
         onSuccess: (data) => {
             // Save token
-            console.log(data, "checking");
-            localStorage.setItem('token', data.data.token);
-            // You might want to update global user state here if you have a context/store
+            if (data?.data?.token) {
+                localStorage.setItem('token', data.data.token);
+            }
         },
+    });
+};
+
+export interface ResetPasswordRequest {
+    email: string;
+    newPassword: string;
+}
+
+export const resetPassword = async (data: ResetPasswordRequest) => {
+    const response = await apiClient.post('/auth/reset-password', data);
+    return response.data;
+};
+
+export const useResetPassword = () => {
+    return useMutation({
+        mutationFn: resetPassword,
     });
 };

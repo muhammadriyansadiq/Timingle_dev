@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Dropdown, Avatar, message, Spin } from 'antd';
-import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, DeleteOutlined, UserOutlined, PlusOutlined, KeyOutlined } from '@ant-design/icons';
 import { GenericTable } from '../../../shared/components/ui/GenericTable';
 import { ConfirmationModal } from '../../../shared/components/ui/ConfirmationModal';
 import { GenericModal } from '../../../shared/components/ui/GenericModal';
@@ -14,6 +14,7 @@ import { useVeterinaries, useVeterinary, useUpdateVeterinary, useDeleteVeterinar
 import dayjs from 'dayjs';
 import { CustomButton } from '../../../shared/components/ui/CustomButton';
 import { UserRoles } from '../../users/types';
+import { ChangePasswordModal } from '../../auth/components/ChangePasswordModal';
 
 const veterinarySchema = z.object({
     firstName: z.string().min(1, 'First Name is required'),
@@ -57,6 +58,8 @@ export const VeterinaryListPage: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+    const [selectedUserEmail, setSelectedUserEmail] = useState<string>('');
     const [selectedVetId, setSelectedVetId] = useState<number | null>(null);
 
     // Fetch Single Veterinary
@@ -141,6 +144,17 @@ export const VeterinaryListPage: React.FC = () => {
     const handleCloseCreateModal = () => {
         setIsCreateModalOpen(false);
         resetCreate();
+        resetCreate();
+    };
+
+    const handleChangePasswordClick = (email: string) => {
+        setSelectedUserEmail(email);
+        setIsChangePasswordModalOpen(true);
+    };
+
+    const handleCloseChangePasswordModal = () => {
+        setIsChangePasswordModalOpen(false);
+        setSelectedUserEmail('');
     };
 
     const onSubmitCreate = (data: CreateVeterinarySchema) => {
@@ -219,6 +233,12 @@ export const VeterinaryListPage: React.FC = () => {
                         label: 'Delete',
                         danger: true,
                         onClick: () => handleDeleteClick(record.id),
+                    },
+                    {
+                        key: 'change-password',
+                        icon: <KeyOutlined />,
+                        label: 'Change Password',
+                        onClick: () => handleChangePasswordClick(record.email),
                     },
                 ];
 
@@ -383,6 +403,12 @@ export const VeterinaryListPage: React.FC = () => {
                 message="Are you sure you want to delete this veterinary?"
                 confirmText="Delete"
                 cancelText="Cancel"
+            />
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                isOpen={isChangePasswordModalOpen}
+                onClose={handleCloseChangePasswordModal}
+                email={selectedUserEmail}
             />
         </>
     );

@@ -56,18 +56,18 @@ export const PairsPage: React.FC = () => {
         }
     });
 
-    const handleCreateClick = () => {
-        setSelectedPair(null);
-        reset({
-            pairsName: '',
-            owner: '',
-            date: dayjs().format('DD MMM YYYY'),
-            type: 'Breeder',
-            status: 'Paid',
-            image: '',
-        });
-        setIsEditModalOpen(true);
-    };
+    // const handleCreateClick = () => {
+    //     setSelectedPair(null);
+    //     reset({
+    //         pairsName: '',
+    //         owner: '',
+    //         date: dayjs().format('DD MMM YYYY'),
+    //         type: 'Breeder',
+    //         status: 'Paid',
+    //         image: '',
+    //     });
+    //     setIsEditModalOpen(true);
+    // };
 
     const handleEditClick = (pair: Pair) => {
         setSelectedPair(pair);
@@ -237,13 +237,13 @@ export const PairsPage: React.FC = () => {
                         <option value="Vendor">Vendor</option>
                     </select> </div>
 
-                <Button
+                {/* <Button
                     icon={<PlusOutlined />}
                     className=" bg-buttonbgcolor! text-white! border-none! hover:bg-[#8f5de8]! h-11! px-6 font-semibold rounded-lg shadow-sm"
                     onClick={handleCreateClick}
                 >
                     Add Record
-                </Button>
+                </Button> */}
             </div>
 
             {/* <div className="flex items-center flex-col md:flex-row gap-4 mb-6 justify-between">
